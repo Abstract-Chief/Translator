@@ -25,6 +25,7 @@ templates = Jinja2Templates(directory="templates")
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "tuke26"
+AUTH_KEY = os.environ.get("AUTH_KEY", "")
 
 # OpenAI API key stored in memory; can be preset via OPENAI_API_KEY env var
 _openai_api_key: str = os.environ.get("OPENAI_API_KEY", "")
@@ -50,11 +51,22 @@ def _is_logged_in(request: Request) -> bool:
     return request.session.get("logged_in") is True
 
 
+def _try_key_auth(request: Request) -> bool:
+    """Return True if ?key= matches AUTH_KEY and session was set."""
+    if not AUTH_KEY:
+        return False
+    key = request.query_params.get("key", "")
+    if key and secrets.compare_digest(key, AUTH_KEY):
+        request.session["logged_in"] = True
+        return True
+    return False
+
+
 # ===== AUTH =====
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    if _is_logged_in(request):
+    if _try_key_auth(request) or _is_logged_in(request):
         return RedirectResponse(url="/")
     return templates.TemplateResponse("login.html", {"request": request})
 
@@ -105,6 +117,7 @@ async def update_settings(req: SettingsRequest, request: Request):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
+    _try_key_auth(request)
     if not _is_logged_in(request):
         return RedirectResponse(url="/login")
     return templates.TemplateResponse("index.html", {"request": request})
