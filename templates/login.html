@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Вход</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #f2f2f2;
+      --card:    #ffffff;
+      --input:   #f7f7f7;
+      --border:  #e3e3e3;
+      --focus:   #111;
+      --text:    #111;
+      --muted:   #888;
+      --err:     #d93025;
+      --btn-bg:  #111;
+      --btn-fg:  #fff;
+      --shadow:  0 4px 32px rgba(0,0,0,.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:      #0d0d0d;
+        --card:    #1a1a1a;
+        --input:   #242424;
+        --border:  #333;
+        --focus:   #fff;
+        --text:    #f0f0f0;
+        --muted:   #666;
+        --err:     #ff6b6b;
+        --btn-bg:  #f0f0f0;
+        --btn-fg:  #111;
+        --shadow:  0 4px 32px rgba(0,0,0,.4);
+      }
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 44px 40px 36px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: var(--shadow);
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -.3px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+
+    .field input {
+      height: 48px;
+      padding: 0 16px;
+      background: var(--input);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+      -webkit-appearance: none;
+    }
+
+    .field input::placeholder {
+      color: var(--muted);
+      opacity: .6;
+    }
+
+    .field input:focus {
+      border-color: var(--focus);
+      background: var(--card);
+      box-shadow: 0 0 0 3px rgba(128,128,128,.12);
+    }
+
+    .field input.err {
+      border-color: var(--err);
+    }
+
+    .error-msg {
+      font-size: 12.5px;
+      color: var(--err);
+      min-height: 16px;
+      margin-bottom: 12px;
+      opacity: 0;
+      transition: opacity .18s;
+    }
+    .error-msg.show { opacity: 1; }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60%  { transform: translateX(-6px); }
+      40%,80%  { transform: translateX(6px); }
+    }
+    .shake { animation: shake .35s ease; }
+
+    .btn {
+      width: 100%;
+      height: 50px;
+      margin-top: 4px;
+      background: var(--btn-bg);
+      color: var(--btn-fg);
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity .15s, transform .1s;
+      letter-spacing: .1px;
+      -webkit-appearance: none;
+    }
+    .btn:hover   { opacity: .85; }
+    .btn:active  { transform: scale(.98); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    .spinner {
+      width: 17px; height: 17px;
+      border: 2.5px solid rgba(128,128,128,.25);
+      border-top-color: var(--btn-fg);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 400px) {
+      body { padding: 0; align-items: stretch; }
+      .card { border-radius: 0; max-width: 100%; min-height: 100vh; padding: 56px 28px 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1 class="title">Вход</h1>
+  <p class="subtitle">Переводчик · Администратор</p>
+
+  <form id="form" onsubmit="doLogin(event)" novalidate>
+
+    <div class="field">
+      <label for="u">Логин</label>
+      <input type="text" id="u" placeholder="admin" autocomplete="username" required/>
+    </div>
+
+    <div class="field">
+      <label for="p">Пароль</label>
+      <input type="password" id="p" placeholder="••••••" autocomplete="current-password" required/>
+    </div>
+
+    <div class="error-msg" id="err"></div>
+
+    <button class="btn" id="btn" type="submit">
+      <span id="btn-label">Войти</span>
+    </button>
+
+  </form>
+</div>
+
+<script>
+  function showError(msg) {
+    const el = document.getElementById('err');
+    el.textContent = msg;
+    el.classList.toggle('show', !!msg);
+    if (msg) {
+      ['u', 'p'].forEach(id => {
+        const inp = document.getElementById(id);
+        inp.classList.add('err', 'shake');
+        inp.addEventListener('animationend', () => inp.classList.remove('shake'), { once: true });
+      });
+    } else {
+      ['u', 'p'].forEach(id => document.getElementById(id).classList.remove('err'));
+    }
+  }
+
+  ['u', 'p'].forEach(id =>
+    document.getElementById(id).addEventListener('input', () => showError(''))
+  );
+
+  async function doLogin(e) {
+    e.preventDefault();
+    showError('');
+    const btn = document.getElementById('btn');
+    btn.disabled = true;
+    document.getElementById('btn-label').innerHTML = '<span class="spinner"></span>';
+
+    try {
+      const r = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('u').value,
+          password: document.getElementById('p').value,
+        }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        window.location.href = '/';
+      } else {
+        showError(d.error || 'Неверный логин или пароль');
+        btn.disabled = false;
+        document.getElementById('btn-label').textContent = 'Войти';
+      }
+    } catch {
+      showError('Ошибка соединения');
+      btn.disabled = false;
+      document.getElementById('btn-label').textContent = 'Войти';
+    }
+  }
+</script>
+</body>
+</html>
